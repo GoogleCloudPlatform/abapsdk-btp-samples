@@ -16,26 +16,21 @@ CLASS zcl_cs_access_secret_version DEFINITION
   PUBLIC FINAL
   CREATE PUBLIC.
 
-public section.
-
-  interfaces IF_OO_ADT_CLASSRUN .
-protected section.
-private section.
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun.
 ENDCLASS.
 
-CLASS ZCL_CS_ACCESS_SECRET_VERSION IMPLEMENTATION.
 
-
+CLASS zcl_cs_access_secret_version IMPLEMENTATION.
   METHOD if_oo_adt_classrun~main.
     " Data Declarations
-    DATA:
-      lv_p_projects_id TYPE string,
-      lv_p_secrets_id  TYPE string,
-      lv_p_versions_id TYPE string.
+    DATA lv_p_projects_id TYPE string.
+    DATA lv_p_secrets_id  TYPE string.
+    DATA lv_p_versions_id TYPE string.
 
     TRY.
         "  Open HTTP Connection
-        DATA(lo_secretmgr) = NEW /goog/cl_secretmgr_v1( iv_key_name = 'SECRETMGR_DEMO').
+        DATA(lo_secretmgr) = NEW /goog/cl_secretmgr_v1( iv_key_name = 'SECRETMGR_DEMO' ).
 
         " Populate relevant parameters
         lv_p_projects_id = lo_secretmgr->gv_project_id.
@@ -43,16 +38,13 @@ CLASS ZCL_CS_ACCESS_SECRET_VERSION IMPLEMENTATION.
         lv_p_versions_id = '1'.
 
         "  Call API method
-        lo_secretmgr->access_versions(
-        EXPORTING
-          iv_p_projects_id = lv_p_projects_id
-          iv_p_secrets_id  = lv_p_secrets_id
-          iv_p_versions_id = lv_p_versions_id
-        IMPORTING
-        es_output        = DATA(ls_output)
-        ev_ret_code      = DATA(lv_ret_code)
-        ev_err_text      = DATA(lv_err_text)
-        es_err_resp      = DATA(ls_err_resp) ).
+        lo_secretmgr->access_versions( EXPORTING iv_p_projects_id = lv_p_projects_id
+                                                 iv_p_secrets_id  = lv_p_secrets_id
+                                                 iv_p_versions_id = lv_p_versions_id
+                                       IMPORTING es_output        = DATA(ls_output)
+                                                 ev_ret_code      = DATA(lv_ret_code)
+                                                 ev_err_text      = DATA(lv_err_text)
+                                                 es_err_resp      = DATA(ls_err_resp) ).
 
         IF /goog/cl_http_client=>is_success( lv_ret_code ).
           " Print the accessed Secret ID

@@ -16,30 +16,22 @@ CLASS zcl_cs_destroy_secret_version DEFINITION
   PUBLIC FINAL
   CREATE PUBLIC.
 
-public section.
-
-  interfaces IF_OO_ADT_CLASSRUN .
-protected section.
-private section.
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun.
 ENDCLASS.
 
 
-
-CLASS ZCL_CS_DESTROY_SECRET_VERSION IMPLEMENTATION.
-
-
+CLASS zcl_cs_destroy_secret_version IMPLEMENTATION.
   METHOD if_oo_adt_classrun~main.
-
     " Data declarations
-    DATA:
-      lv_p_projects_id TYPE string,
-      lv_p_secrets_id  TYPE string,
-      lv_p_versions_id TYPE string,
-      ls_input         TYPE /goog/cl_secretmgr_v1=>ty_010.
+    DATA lv_p_projects_id TYPE string.
+    DATA lv_p_secrets_id  TYPE string.
+    DATA lv_p_versions_id TYPE string.
+    DATA ls_input         TYPE /goog/cl_secretmgr_v1=>ty_010.
 
     TRY.
         " Open HTTP Connection
-        DATA(lo_secretmgr) = NEW /goog/cl_secretmgr_v1( iv_key_name = 'SECRETMGR_DEMO').
+        DATA(lo_secretmgr) = NEW /goog/cl_secretmgr_v1( iv_key_name = 'SECRETMGR_DEMO' ).
 
         " Populate relevant parameters
         lv_p_projects_id = lo_secretmgr->gv_project_id.
@@ -47,17 +39,14 @@ CLASS ZCL_CS_DESTROY_SECRET_VERSION IMPLEMENTATION.
         lv_p_versions_id = '1'.
 
         " Call API Method
-        lo_secretmgr->destroy_versions(
-        EXPORTING
-          iv_p_projects_id = lv_p_projects_id
-          iv_p_secrets_id  = lv_p_secrets_id
-          iv_p_versions_id = lv_p_versions_id
-          is_input         = ls_input
-        IMPORTING
-        es_output        = DATA(ls_output)
-        ev_ret_code      = DATA(lv_ret_code)
-        ev_err_text      = DATA(lv_err_text)
-        es_err_resp      = DATA(ls_err_resp) ).
+        lo_secretmgr->destroy_versions( EXPORTING iv_p_projects_id = lv_p_projects_id
+                                                  iv_p_secrets_id  = lv_p_secrets_id
+                                                  iv_p_versions_id = lv_p_versions_id
+                                                  is_input         = ls_input
+                                        IMPORTING es_output        = DATA(ls_output)
+                                                  ev_ret_code      = DATA(lv_ret_code)
+                                                  ev_err_text      = DATA(lv_err_text)
+                                                  es_err_resp      = DATA(ls_err_resp) ).
 
         IF /goog/cl_http_client=>is_success( lv_ret_code ).
           out->write( | Secret version deleted successfully | ).

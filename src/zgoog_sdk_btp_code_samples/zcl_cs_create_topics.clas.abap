@@ -12,7 +12,7 @@
 "  See the License for the specific language governing permissions   -
 "  and limitations under the License.                                -
 " --------------------------------------------------------------------
-CLASS zcl_cs_add_secret_version DEFINITION
+CLASS zcl_cs_create_topics DEFINITION
   PUBLIC FINAL
   CREATE PUBLIC.
 
@@ -21,42 +21,45 @@ CLASS zcl_cs_add_secret_version DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_cs_add_secret_version IMPLEMENTATION.
+CLASS zcl_cs_create_topics IMPLEMENTATION.
   METHOD if_oo_adt_classrun~main.
-    " Data Declarations
+    " Data declarations
     DATA lv_p_projects_id TYPE string.
-    DATA lv_p_secrets_id  TYPE string.
-    DATA ls_input         TYPE /goog/cl_secretmgr_v1=>ty_002.
+    DATA lv_p_topics_id   TYPE string.
+    DATA ls_input         TYPE /goog/cl_pubsub_v1=>ty_041.
 
     TRY.
-        " Open HTTP Connection
-        DATA(lo_secretmgr) = NEW /goog/cl_secretmgr_v1( iv_key_name = 'SECRETMGR_DEMO' ).
+        "  Open HTTP Connection
+        DATA(lo_pubsub) = NEW /goog/cl_pubsub_v1( iv_key_name = 'PUBSUB_DEMO' ).
 
         " Populate relevant parameters
-        lv_p_projects_id = lo_secretmgr->gv_project_id.
-        lv_p_secrets_id = 'Secret_001'.
-        ls_input-payload-data = cl_web_http_utility=>encode_base64( unencoded = 'Ssshhh!! This is a Secret' ).
+        " Derive project id from the client object
+        lv_p_projects_id = lo_pubsub->gv_project_id.
+        " Name of Topic that will get created.
+        lv_p_topics_id = 'SAMPLE_TOPIC'.
+        " Topic Related Attributes can be provided in LS_INPUT.
+        ls_input-message_retention_duration = '86400s'.
 
-        "  Call API method
-        lo_secretmgr->add_version_secrets( EXPORTING iv_p_projects_id = lv_p_projects_id
-                                                     iv_p_secrets_id  = lv_p_secrets_id
-                                                     is_input         = ls_input
-                                           IMPORTING es_output        = DATA(ls_output)
-                                                     ev_ret_code      = DATA(lv_ret_code)
-                                                     ev_err_text      = DATA(lv_err_text)
-                                                     es_err_resp      = DATA(ls_err_resp) ).
+        " Call API method
+        lo_pubsub->create_topics( EXPORTING iv_p_projects_id = lv_p_projects_id
+                                            iv_p_topics_id   = lv_p_topics_id
+                                            is_input         = ls_input
+                                  IMPORTING es_output        = DATA(ls_output)
+                                            ev_ret_code      = DATA(lv_ret_code)
+                                            ev_err_text      = DATA(lv_err_text)
+                                            es_err_resp      = DATA(ls_err_resp) ).
 
         IF /goog/cl_http_client=>is_success( lv_ret_code ).
-          out->write( | Secret version : { lv_p_secrets_id } added successfully | ).
+          out->write( | Topic created successfully!| ).
         ELSE.
           out->write( | Error occurred: { lv_err_text }| ).
         ENDIF.
 
-        "  Close HTTP Connection
-        lo_secretmgr->close( ).
+        " Close HTTP Connection
+        lo_pubsub->close( ).
 
-      CATCH /goog/cx_sdk INTO DATA(lo_sdk_excp).
-        lv_err_text = lo_sdk_excp->get_text( ).
+      CATCH /goog/cx_sdk INTO DATA(lo_exception).
+        lv_err_text = lo_exception->get_text( ).
         out->write( |Exception occurred: { lv_err_text } | ).
     ENDTRY.
   ENDMETHOD.
